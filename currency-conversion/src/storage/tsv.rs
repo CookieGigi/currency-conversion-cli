@@ -8,22 +8,26 @@ use super::common::{DataInfo, DataInfoError, DataInfoSuccess, StorageManager};
 
 use anyhow::{anyhow, Result};
 
+/// Store data in tsv file
 pub struct TSVStorageManager {
     settings: TSVStorageSettings,
 }
 
+/// Settings for TSVStorageManager
 #[derive(Debug, Deserialize, Serialize, Eq, PartialEq, Clone)]
 pub struct TSVStorageSettings {
     pub file_path: String,
 }
 
 impl TSVStorageManager {
+    /// Build a TSVStorageManager with the path to the file where are store
     pub fn build(path: String) -> TSVStorageManager {
         TSVStorageManager {
             settings: TSVStorageSettings { file_path: path },
         }
     }
 
+    /// Build a TSVStorageManager from settings
     pub fn from_settings(settings: TSVStorageSettings) -> TSVStorageManager {
         TSVStorageManager { settings }
     }
