@@ -209,7 +209,6 @@ mod test {
 
         let mut path = PathBuf::new();
         path.push(dirpath.to_string() + "/test.tsv");
-        
 
         super::create_or_update_file(&data, Path::new(&path)).unwrap();
 

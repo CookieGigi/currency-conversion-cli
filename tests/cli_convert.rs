@@ -26,7 +26,7 @@ fn cli_convert() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut path = PathBuf::new();
 
-    path.push( dirpath.to_string() + "/conversion_rate.tsv");
+    path.push(dirpath.to_string() + "/conversion_rate.tsv");
 
     let tsv_settings = TSVStorageSettings { file_path: path };
     let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone());

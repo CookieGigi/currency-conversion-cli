@@ -63,8 +63,8 @@ fn cli_update() -> Result<(), Box<dyn std::error::Error>> {
 
     // modify config
     let config_path = dirpath.to_string() + "/config.toml";
-    let mut conversion_rate_path =PathBuf::new();
-    conversion_rate_path.push( dirpath.to_string() + "/conversion_rate.tsv");
+    let mut conversion_rate_path = PathBuf::new();
+    conversion_rate_path.push(dirpath.to_string() + "/conversion_rate.tsv");
     let conversion_rates_tsv_settings = TSVStorageSettings {
         file_path: conversion_rate_path.clone(),
     };

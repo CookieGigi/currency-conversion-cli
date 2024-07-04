@@ -106,6 +106,7 @@ impl Config {
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 fn prompt_storage_strategy(
     stdin: &Stdin,
     text: &str,
@@ -121,6 +122,7 @@ fn prompt_storage_strategy(
     })
 }
 
+#[cfg(not(tarpaulin_include))]
 fn prompt_storage_type_settings(
     stdin: &Stdin,
     storage_type: String,
@@ -138,6 +140,7 @@ fn prompt_storage_type_settings(
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 fn prompt_tsv_settings(stdin: &Stdin) -> Result<Option<TSVStorageSettings>> {
     println!("File path :");
     let filepath = prompt_string_without_text_and_default(stdin)?;
@@ -161,6 +164,7 @@ fn prompt_string(stdin: &Stdin, text: &str, current_value: &String) -> Result<St
     Ok(buffer.trim().to_string())
 }
 
+#[cfg(not(tarpaulin_include))]
 fn prompt_string_without_text_and_default(stdin: &Stdin) -> Result<Option<String>> {
     let mut buffer = String::new();
     stdin.read_line(&mut buffer)?;
