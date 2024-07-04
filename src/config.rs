@@ -1,4 +1,4 @@
-use std::{io::Stdin, path::PathBuf};
+use std::{io::Stdin, path::PathBuf, str::FromStr};
 
 use anyhow::{bail, Result};
 use currency_conversion::storage::{common::StorageType, tsv::TSVStorageSettings};
@@ -38,14 +38,11 @@ impl Default for Config {
         Config {
             api_key: "#INSERT_API_KEY_HERE#".to_string(),
             base: "EUR".to_string(),
-            // Not sure of this one : it can cause problem in case of path with non utf-8
-            // characters
-            // TODO : refactor to replace String to Pathbuf
             symbols_storage: StorageType::TSV(TSVStorageSettings {
-                file_path: symbols_file_path.to_string_lossy().into_owned(),
+                file_path: symbols_file_path,
             }),
             conversion_rates_storage: StorageType::TSV(TSVStorageSettings {
-                file_path: conversion_rates_file_path.to_string_lossy().into_owned(),
+                file_path: conversion_rates_file_path,
             }),
             latest_endpoint_url:
                 "http://api.exchangeratesapi.io/v1/latest?access_key={api_key}&base={base}"
@@ -55,7 +52,6 @@ impl Default for Config {
         }
     }
 }
-// TODO : Add new storage strategy
 #[cfg(not(tarpaulin_include))]
 impl Config {
     pub fn prompt_config(&self) -> Result<Config> {
@@ -81,25 +77,25 @@ impl Config {
         // base
         res.base
             .clone_from(&prompt_string(&stdin, "base currency", &self.base)?);
-        // symbols file path
-        /*res.symbols_file_path.clone_from(&prompt_string(
+        // symbols storage strategy
+        res.symbols_storage.clone_from(&prompt_storage_strategy(
             &stdin,
-            "currency symbols file path",
-            &self.symbols_file_path,
-        )?);*/
+            "Symbols storage",
+            &self.symbols_storage,
+        )?);
         // symbols endpoint
         res.symbols_endpoint_url.clone_from(&prompt_string(
             &stdin,
             "currency symbols endpoint URL",
             &self.symbols_endpoint_url,
         )?);
-        // converison rates file path
-        /*res.conversion_rates_file_path.clone_from(&prompt_string(
-            &stdin,
-            "conversion rates file path",
-            &self.conversion_rates_file_path,
-        )?);*/
-        // conversion rates endpoint
+        // converison rates storage strategy
+        res.conversion_rates_storage
+            .clone_from(&prompt_storage_strategy(
+                &stdin,
+                "conversion rates storage",
+                &self.conversion_rates_storage,
+            )?);
         res.latest_endpoint_url.clone_from(&prompt_string(
             &stdin,
             "conversion rates endpoint URL",
@@ -107,6 +103,49 @@ impl Config {
         )?);
 
         Ok(res)
+    }
+}
+
+fn prompt_storage_strategy(
+    stdin: &Stdin,
+    text: &str,
+    current_value: &StorageType,
+) -> Result<StorageType> {
+    println!("{text} (current : {:?} : ", current_value);
+    println!("Type :");
+    let storage_type = prompt_string_without_text_and_default(stdin)?;
+
+    Ok(match storage_type {
+        Some(t) => prompt_storage_type_settings(stdin, t, current_value)?,
+        None => current_value.clone(),
+    })
+}
+
+fn prompt_storage_type_settings(
+    stdin: &Stdin,
+    storage_type: String,
+    current_value: &StorageType,
+) -> Result<StorageType> {
+    if storage_type.to_lowercase().contains("tsv") {
+        let settings = prompt_tsv_settings(stdin)?;
+        match settings {
+            Some(s) => Ok(StorageType::TSV(s)),
+            None => Ok(current_value.clone()),
+        }
+    } else {
+        tracing::error!("\"{storage_type}\" is not recognized as valid storage type. We keep the old configuration.");
+        Ok(current_value.clone())
+    }
+}
+
+fn prompt_tsv_settings(stdin: &Stdin) -> Result<Option<TSVStorageSettings>> {
+    println!("File path :");
+    let filepath = prompt_string_without_text_and_default(stdin)?;
+    match filepath {
+        Some(p) => Ok(Some(TSVStorageSettings {
+            file_path: PathBuf::from_str(&p)?,
+        })),
+        None => Ok(None),
     }
 }
 
@@ -120,4 +159,14 @@ fn prompt_string(stdin: &Stdin, text: &str, current_value: &String) -> Result<St
     }
 
     Ok(buffer.trim().to_string())
+}
+
+fn prompt_string_without_text_and_default(stdin: &Stdin) -> Result<Option<String>> {
+    let mut buffer = String::new();
+    stdin.read_line(&mut buffer)?;
+    if buffer.trim().is_empty() {
+        return Ok(None);
+    }
+
+    Ok(Some(buffer.trim().to_string()))
 }
