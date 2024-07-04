@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use assert_cmd::Command;
 use currency_conversion::{
     common::supported_symbols::Symbols,
@@ -26,7 +28,8 @@ fn cli_get_symbols() -> Result<(), Box<dyn std::error::Error>> {
 
     std::fs::create_dir_all(dirpath).unwrap();
 
-    let path = dirpath.to_string() + "/symbols.tsv";
+    let mut path = PathBuf::new();
+    path.push( dirpath.to_string() + "/symbols.tsv");
 
     let tsv_settings = TSVStorageSettings { file_path: path };
     let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone());

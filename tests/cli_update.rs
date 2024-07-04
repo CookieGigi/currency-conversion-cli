@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
 use currency_conversion::storage::tsv::TSVStorageSettings;
@@ -63,11 +63,13 @@ fn cli_update() -> Result<(), Box<dyn std::error::Error>> {
 
     // modify config
     let config_path = dirpath.to_string() + "/config.toml";
-    let conversion_rate_path = dirpath.to_string() + "/conversion_rate.tsv";
+    let mut conversion_rate_path =PathBuf::new();
+    conversion_rate_path.push( dirpath.to_string() + "/conversion_rate.tsv");
     let conversion_rates_tsv_settings = TSVStorageSettings {
         file_path: conversion_rate_path.clone(),
     };
-    let symbols_path = dirpath.to_string() + "/symbols.tsv";
+    let mut symbols_path = PathBuf::new();
+    symbols_path.push(dirpath.to_string() + "/symbols.tsv");
     let symbols_tsv_settings = TSVStorageSettings {
         file_path: symbols_path.clone(),
     };

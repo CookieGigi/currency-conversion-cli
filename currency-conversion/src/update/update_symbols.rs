@@ -62,7 +62,7 @@ fn get_supported_symbols(url: &str) -> Result<Vec<Symbols>> {
 
 #[cfg(test)]
 mod test {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use httpmock::{Method::GET, MockServer};
     use serde_json::json;
@@ -190,7 +190,9 @@ mod test {
                 .json_body(server_response);
         });
 
-        let file_path = dirpath.to_string() + "symbols.tsv";
+        let mut file_path = PathBuf::new();
+
+        file_path.push(dirpath.to_string() + "symbols.tsv");
 
         let storage_manager = TSVStorageManager::build(file_path.clone());
 

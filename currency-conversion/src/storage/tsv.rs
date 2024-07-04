@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -16,12 +16,12 @@ pub struct TSVStorageManager {
 /// Settings for TSVStorageManager
 #[derive(Debug, Deserialize, Serialize, Eq, PartialEq, Clone)]
 pub struct TSVStorageSettings {
-    pub file_path: String,
+    pub file_path: PathBuf,
 }
 
 impl TSVStorageManager {
     /// Build a TSVStorageManager with the path to the file where are store
-    pub fn build(path: String) -> TSVStorageManager {
+    pub fn build(path: PathBuf) -> TSVStorageManager {
         TSVStorageManager {
             settings: TSVStorageSettings { file_path: path },
         }
@@ -97,7 +97,7 @@ where
 }
 
 /// Get information about data                                                                                               
-fn get_data_info<T>(path: &str) -> Result<DataInfo>
+fn get_data_info<T>(path: &PathBuf) -> Result<DataInfo>
 where
     T: for<'de> Deserialize<'de>,
 {
@@ -118,7 +118,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use serde::{Deserialize, Serialize};
 
@@ -207,7 +207,9 @@ mod test {
 
         std::fs::create_dir_all(dirpath).unwrap();
 
-        let path = dirpath.to_string() + "/test.tsv";
+        let mut path = PathBuf::new();
+        path.push(dirpath.to_string() + "/test.tsv");
+        
 
         super::create_or_update_file(&data, Path::new(&path)).unwrap();
 
@@ -226,7 +228,8 @@ mod test {
 
         std::fs::create_dir_all(dirpath).unwrap();
 
-        let path = dirpath.to_string() + "/test.tsv";
+        let mut path = PathBuf::new();
+        path.push(dirpath.to_string() + "/test.tsv");
 
         let res = super::get_data_info::<TestData>(&path);
 

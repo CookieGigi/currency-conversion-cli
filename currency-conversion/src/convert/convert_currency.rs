@@ -24,6 +24,8 @@ where
 
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
+
     use rust_decimal_macros::dec;
 
     use crate::{
@@ -34,7 +36,10 @@ mod test {
     fn setup(dirpath: String, data: Vec<ConversionRate>) -> TSVStorageManager {
         std::fs::create_dir_all(&dirpath).unwrap();
 
-        let path = dirpath + "conversion_rate.tsv";
+        let mut path = PathBuf::new();
+
+        path.push(dirpath);
+        path.push("conversion_rate.tsv");
 
         let storage_manager = TSVStorageManager::build(path);
 

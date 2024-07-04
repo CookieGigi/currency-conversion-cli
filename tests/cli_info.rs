@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use assert_cmd::Command;
 use currency_conversion::{
     common::{conversion_rate::ConversionRate, supported_symbols::Symbols},
@@ -26,8 +28,9 @@ fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
 
     std::fs::create_dir_all(dirpath).unwrap();
 
-    let conversion_rates_path = dirpath.to_string() + "/conversion_rate.tsv";
+    let mut conversion_rates_path  = PathBuf::new();
 
+    conversion_rates_path.push( dirpath.to_string() + "/conversion_rate.tsv");
     let tsv_settings_conversion_rates = TSVStorageSettings {
         file_path: conversion_rates_path,
     };
@@ -36,8 +39,10 @@ fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
 
     StorageManager::update(&storage_manager_conversion_rates, &conversion_rates).unwrap();
 
-    let symbols_path = dirpath.to_string() + "/symbols.tsv";
 
+    let mut symbols_path  = PathBuf::new();
+
+    symbols_path.push( dirpath.to_string() + "/symbols.tsv");
     let tsv_settings_symbols = TSVStorageSettings {
         file_path: symbols_path,
     };

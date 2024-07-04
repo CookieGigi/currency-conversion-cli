@@ -69,7 +69,7 @@ fn get_conversion_rates(url: &str, base: &str) -> Result<Vec<ConversionRate>> {
 
 #[cfg(test)]
 mod test {
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
 
     use httpmock::{Method::GET, MockServer};
     use rust_decimal_macros::dec;
@@ -208,7 +208,8 @@ mod test {
                 .json_body(server_response);
         });
 
-        let file_path = dirpath.to_string() + "conversion_rates.tsv";
+        let mut file_path = PathBuf::new();
+        file_path.push(dirpath.to_string() + "conversion_rates.tsv");
 
         let storage_manager = TSVStorageManager::build(file_path.clone());
 
