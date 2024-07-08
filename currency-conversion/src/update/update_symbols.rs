@@ -9,7 +9,7 @@ use serde::Deserialize;
 use super::common::ErrorResponseAPI;
 
 /// Update supported symbols file
-pub fn update_symbols<T>(
+pub async fn update_symbols<T>(
     symbols_endpoint_url: &str,
     api_key: &str,
     symbols_storage_manager: &T,
@@ -18,12 +18,12 @@ where
     T: StorageManager<Symbols>,
 {
     let url = symbols_endpoint_url.replace("{api_key}", api_key);
-    let symbols = get_supported_symbols(&url)?;
+    let symbols = get_supported_symbols(&url).await?;
 
     tracing::debug!("{:?}", &symbols);
     tracing::info!("{} Symbols updated", symbols.len());
 
-    symbols_storage_manager.update(&symbols)?;
+    symbols_storage_manager.update(&symbols).await?;
 
     Ok(())
 }
@@ -44,10 +44,10 @@ enum SymbolResponseAPI {
 }
 
 /// Get supported symbols from exchanges rates API
-fn get_supported_symbols(url: &str) -> Result<Vec<Symbols>> {
-    let response = reqwest::blocking::get(url)?;
+async fn get_supported_symbols(url: &str) -> Result<Vec<Symbols>> {
+    let response = reqwest::get(url).await?;
 
-    match response.json()? {
+    match response.json().await? {
         SymbolResponseAPI::Success(s) => Ok(
             crate::common::supported_symbols::from_hash_map_to_vec(s.symbols)?,
         ),
@@ -77,8 +77,8 @@ mod test {
         std::fs::remove_dir_all(path).unwrap();
     }
 
-    #[test]
-    fn get_supported_symbols() {
+    #[tokio::test]
+    async fn get_supported_symbols() {
         // param
         let api_key = "123";
 
@@ -110,7 +110,7 @@ mod test {
         });
 
         let response =
-            super::get_supported_symbols(&server.url(format!("/symbols?access_key={api_key}")));
+            super::get_supported_symbols(&server.url(format!("/symbols?access_key={api_key}"))).await;
 
         mock.assert();
 
@@ -118,8 +118,9 @@ mod test {
         assert!(response.unwrap().contains(&expected_all));
     }
 
-    #[test]
-    fn get_supported_symbols_fail() {
+    
+    #[tokio::test]
+    async fn get_supported_symbols_fail() {
         // param
         let api_key = "123";
         let error_code = 104;
@@ -152,7 +153,7 @@ mod test {
         );
 
         let response =
-            super::get_supported_symbols(&server.url(format!("/test?access_key={api_key}")));
+            super::get_supported_symbols(&server.url(format!("/test?access_key={api_key}"))).await;
 
         mock.assert();
 
@@ -160,8 +161,8 @@ mod test {
         assert_eq!(response.unwrap_err().to_string(), expected_error_message);
     }
 
-    #[test]
-    fn update_symbols() {
+    #[tokio::test]
+    async fn update_symbols() {
         // param
         let api_key = "123";
         let server_response = json!(
@@ -200,7 +201,7 @@ mod test {
             &server.url("/test?access_key={api_key}"),
             api_key,
             &storage_manager,
-        );
+        ).await;
 
         mock.assert();
 

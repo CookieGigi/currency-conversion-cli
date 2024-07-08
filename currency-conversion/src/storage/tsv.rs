@@ -34,29 +34,29 @@ impl TSVStorageManager {
 }
 
 impl StorageManager<ConversionRate> for TSVStorageManager {
-    fn update(&self, data: &[ConversionRate]) -> anyhow::Result<()> {
+    async fn update(&self, data: &[ConversionRate]) -> anyhow::Result<()> {
         create_or_update_file::<ConversionRate>(data, Path::new(&self.settings.file_path))
     }
 
-    fn get_all(&self) -> anyhow::Result<Vec<ConversionRate>> {
+    async fn get_all(&self) -> anyhow::Result<Vec<ConversionRate>> {
         load_data(Path::new(&self.settings.file_path))
     }
 
-    fn get_data_info(&self) -> Result<DataInfo> {
+    async fn get_data_info(&self) -> Result<DataInfo> {
         get_data_info::<ConversionRate>(&self.settings.file_path)
     }
 }
 
 impl StorageManager<Symbols> for TSVStorageManager {
-    fn update(&self, data: &[Symbols]) -> anyhow::Result<()> {
+    async fn update(&self, data: &[Symbols]) -> anyhow::Result<()> {
         create_or_update_file::<Symbols>(data, Path::new(&self.settings.file_path))
     }
 
-    fn get_all(&self) -> anyhow::Result<Vec<Symbols>> {
+    async fn get_all(&self) -> anyhow::Result<Vec<Symbols>> {
         load_data(Path::new(&self.settings.file_path))
     }
 
-    fn get_data_info(&self) -> Result<DataInfo> {
+    async fn get_data_info(&self) -> Result<DataInfo> {
         get_data_info::<Symbols>(&self.settings.file_path)
     }
 }

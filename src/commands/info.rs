@@ -10,7 +10,7 @@ mod common;
 mod info_config;
 
 #[cfg(not(tarpaulin_include))]
-pub fn run_info(config: Config, args: &InfoArgs, config_path: Option<String>) -> Result<()> {
+pub async fn run_info(config: Config, args: &InfoArgs, config_path: Option<String>) -> Result<()> {
     use currency_conversion::storage::common::{
         get_conversion_rate_storage_manager, get_symbols_storage_manager, StorageManager,
     };
@@ -25,7 +25,7 @@ pub fn run_info(config: Config, args: &InfoArgs, config_path: Option<String>) ->
         let storage_manager = get_symbols_storage_manager(config.symbols_storage.clone());
         infos.insert(
             "symbols",
-            Info::Symbols(StorageManager::get_data_info(&storage_manager)?),
+            Info::Symbols(StorageManager::get_data_info(&storage_manager).await?),
         );
     }
 
@@ -36,7 +36,7 @@ pub fn run_info(config: Config, args: &InfoArgs, config_path: Option<String>) ->
             get_conversion_rate_storage_manager(config.conversion_rates_storage.clone());
         infos.insert(
             "conversion_rates",
-            Info::ConversionRates(StorageManager::get_data_info(&storage_manager)?),
+            Info::ConversionRates(StorageManager::get_data_info(&storage_manager).await?),
         );
     }
 

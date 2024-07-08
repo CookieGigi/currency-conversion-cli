@@ -10,7 +10,7 @@ pub mod errors;
 
 /// Handle commands execution
 #[cfg(not(tarpaulin_include))]
-pub fn run(
+pub async fn run(
     sub_command: SubCommand,
     config: Config,
     config_path: Option<String>,
@@ -21,10 +21,10 @@ pub fn run(
     use crate::commands::{config::run_config, info::run_info, list::run_list};
 
     match sub_command {
-        SubCommand::Update(args) => run_update(&config, &args)?,
-        SubCommand::Convert(args) => run_convert(&config, &args)?,
-        SubCommand::List(args) => run_list(&config, &args)?,
-        SubCommand::Info(args) => run_info(config, &args, config_path)?,
+        SubCommand::Update(args) => run_update(&config, &args).await?,
+        SubCommand::Convert(args) => run_convert(&config, &args).await?,
+        SubCommand::List(args) => run_list(&config, &args).await?,
+        SubCommand::Info(args) => run_info(config, &args, config_path).await?,
         SubCommand::Config => run_config(&config, &config_path, config_profile)?,
     }
     Ok(())

@@ -11,8 +11,8 @@ use currency_conversion::{
 use currency_conversion_cli::config::Config;
 use rust_decimal_macros::dec;
 
-#[test]
-fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::test]
+async fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
     let conversion_rates = vec![ConversionRate {
         from: "EUR".to_string(),
         to: "USD".to_string(),
@@ -37,7 +37,7 @@ fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
     let storage_manager_conversion_rates =
         TSVStorageManager::from_settings(tsv_settings_conversion_rates.clone());
 
-    StorageManager::update(&storage_manager_conversion_rates, &conversion_rates).unwrap();
+    StorageManager::update(&storage_manager_conversion_rates, &conversion_rates).await.unwrap();
 
     let mut symbols_path = PathBuf::new();
 
@@ -47,7 +47,7 @@ fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
     };
     let storage_manager_symbols = TSVStorageManager::from_settings(tsv_settings_symbols.clone());
 
-    StorageManager::update(&storage_manager_symbols, &symbols).unwrap();
+    StorageManager::update(&storage_manager_symbols, &symbols).await.unwrap();
 
     let config_path = dirpath.to_string() + "/config.toml";
     let config = Config {

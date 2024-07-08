@@ -4,7 +4,8 @@ use currency_conversion_cli::{cli::CliArgs, config::Config, errors::errors_handl
 use tracing_log::AsTrace;
 
 #[cfg(not(tarpaulin_include))]
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     // Get command line arguments
 
     use anyhow::Context;
@@ -39,7 +40,9 @@ fn main() -> Result<()> {
         config,
         args.config_path,
         args.config_profile.as_deref(),
-    ) {
+    )
+    .await
+    {
         Err(error) => errors_handling(error),
         Ok(()) => Ok(()),
     }

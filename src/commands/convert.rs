@@ -5,7 +5,7 @@ use anyhow::Result;
 use currency_conversion::convert::convert_currency::convert;
 
 #[cfg(not(tarpaulin_include))]
-pub fn run_convert(config: &Config, args: &ConvertArgs) -> Result<()> {
+pub async fn run_convert(config: &Config, args: &ConvertArgs) -> Result<()> {
     use currency_conversion::storage::common::get_conversion_rate_storage_manager;
 
     tracing::info!("Convert begin");
@@ -20,7 +20,7 @@ pub fn run_convert(config: &Config, args: &ConvertArgs) -> Result<()> {
         &args.from,
         &args.to,
         args.value,
-    )?;
+    ).await?;
 
     println!("{res}");
     tracing::info!("Convert end");

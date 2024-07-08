@@ -12,8 +12,8 @@ use currency_conversion_cli::config::Config;
 use predicates::prelude::predicate;
 use rust_decimal_macros::dec;
 
-#[test]
-fn cli_convert() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::test]
+async fn cli_convert() -> Result<(), Box<dyn std::error::Error>> {
     let data = vec![ConversionRate {
         from: "EUR".to_string(),
         to: "USD".to_string(),
@@ -31,7 +31,7 @@ fn cli_convert() -> Result<(), Box<dyn std::error::Error>> {
     let tsv_settings = TSVStorageSettings { file_path: path };
     let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone());
 
-    storage_manager.update(&data).unwrap();
+    storage_manager.update(&data).await.unwrap();
 
     let config_path = dirpath.to_string() + "/config.toml";
     let config = Config {

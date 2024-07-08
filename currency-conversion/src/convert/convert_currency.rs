@@ -5,7 +5,7 @@ use crate::{common::conversion_rate::ConversionRate, storage::common::StorageMan
 use anyhow::Result;
 
 /// Convert a `value` `from` a currency `to` another
-pub fn convert<T>(
+pub async fn convert<T>(
     conversion_rates_storage_manager: &T,
     base: &str,
     from: &str,
@@ -15,7 +15,7 @@ pub fn convert<T>(
 where
     T: StorageManager<ConversionRate>,
 {
-    let conversion_rates = conversion_rates_storage_manager.get_all()?;
+    let conversion_rates = conversion_rates_storage_manager.get_all().await?;
 
     let rate = ConversionRate::get_conversion_rate(base, &conversion_rates, from, to)?;
 
@@ -33,7 +33,7 @@ mod test {
         storage::{common::StorageManager, tsv::TSVStorageManager},
     };
 
-    fn setup(dirpath: String, data: Vec<ConversionRate>) -> TSVStorageManager {
+    async fn setup(dirpath: String, data: Vec<ConversionRate>) -> TSVStorageManager {
         std::fs::create_dir_all(&dirpath).unwrap();
 
         let mut path = PathBuf::new();
@@ -43,13 +43,13 @@ mod test {
 
         let storage_manager = TSVStorageManager::build(path);
 
-        storage_manager.update(&data).unwrap();
+        storage_manager.update(&data).await.unwrap();
 
         storage_manager
     }
 
-    #[test]
-    fn convert() {
+    #[tokio::test]
+    async fn convert() {
         let dirpath = "./temp/test/convert/convert_currency/";
         let from = "EUR".to_string();
         let to = "USD".to_string();
@@ -58,9 +58,9 @@ mod test {
             to: to.clone(),
             rate: dec!(1.08),
         }];
-        let storage_manager = setup(dirpath.to_string(), data);
+        let storage_manager = setup(dirpath.to_string(), data).await;
 
-        let res = super::convert(&storage_manager, "EUR", &from, &to, dec!(10.0));
+        let res = super::convert(&storage_manager, "EUR", &from, &to, dec!(10.0)).await;
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), dec!(10.8));
     }

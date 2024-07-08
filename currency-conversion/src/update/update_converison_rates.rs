@@ -10,7 +10,7 @@ use crate::storage::common::StorageManager;
 use super::common::ErrorResponseAPI;
 
 /// Update conversion rate files
-pub fn update_conversion_rates<T>(
+pub async fn update_conversion_rates<T>(
     latest_endpoint_url: &str,
     api_key: &str,
     base: &str,
@@ -22,9 +22,9 @@ where
     let url = latest_endpoint_url
         .replace("{api_key}", api_key)
         .replace("{base}", base);
-    let data = get_conversion_rates(&url, base)?;
+    let data = get_conversion_rates(&url, base).await?;
 
-    conversion_rates_storage_manager.update(&data)?;
+    conversion_rates_storage_manager.update(&data).await?;
 
     Ok(())
 }
@@ -49,12 +49,12 @@ enum LatestResponseAPI {
 }
 
 /// Get conversion rates for the base currency to others currencies from exchanges rates API
-fn get_conversion_rates(url: &str, base: &str) -> Result<Vec<ConversionRate>> {
-    let response = reqwest::blocking::get(url)?;
+async fn get_conversion_rates(url: &str, base: &str) -> Result<Vec<ConversionRate>> {
+    let response = reqwest::get(url).await?;
 
     tracing::debug!("{:?}", response);
 
-    match response.json()? {
+    match response.json().await? {
         LatestResponseAPI::Success(s) => Ok(crate::common::conversion_rate::from_hash_map_to_vec(
             s.rates, base,
         )?),
@@ -85,8 +85,8 @@ mod test {
         std::fs::remove_dir_all(path).unwrap();
     }
 
-    #[test]
-    fn get_conversion_rates() {
+    #[tokio::test]
+    async fn get_conversion_rates() {
         // param
         let api_key = "123";
         let base = "EUR";
@@ -122,7 +122,7 @@ mod test {
         let response = super::get_conversion_rates(
             &server.url(format!("/test?access_key={api_key}&base={base}")),
             base,
-        );
+        ).await;
 
         mock.assert();
 
@@ -130,8 +130,8 @@ mod test {
         assert!(response.unwrap().contains(&expected_usd));
     }
 
-    #[test]
-    fn get_conversion_rates_fail() {
+    #[tokio::test]
+    async fn get_conversion_rates_fail() {
         // param
         let api_key = "123";
         let base = "EUR";
@@ -168,7 +168,7 @@ mod test {
         let response = super::get_conversion_rates(
             &server.url(format!("/test?access_key={api_key}&base={base}")),
             base,
-        );
+        ).await;
 
         mock.assert();
 
@@ -176,8 +176,8 @@ mod test {
         assert_eq!(response.unwrap_err().to_string(), expected_error_message);
     }
 
-    #[test]
-    fn update_conversion_rates() {
+    #[tokio::test]
+    async fn update_conversion_rates() {
         // param
         let api_key = "123";
         let base = "EUR";
@@ -218,7 +218,7 @@ mod test {
             api_key,
             base,
             &storage_manager,
-        );
+        ).await;
 
         mock.assert();
 

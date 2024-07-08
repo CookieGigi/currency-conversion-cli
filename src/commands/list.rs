@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[cfg(not(tarpaulin_include))]
-pub fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
+pub async fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
     use currency_conversion::storage::common::{
         get_conversion_rate_storage_manager, get_symbols_storage_manager,
     };
@@ -21,23 +21,23 @@ pub fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
     match args.dataset {
         ListDataSet::Symbols => {
             let storage_manager = get_symbols_storage_manager(config.symbols_storage.clone());
-            load_and_list_data::<Symbols>(storage_manager)?;
+            load_and_list_data::<Symbols>(storage_manager).await?;
         }
         ListDataSet::ConversionRates => {
             let storage_manager =
                 get_conversion_rate_storage_manager(config.conversion_rates_storage.clone());
-            load_and_list_data::<ConversionRate>(storage_manager)?;
+            load_and_list_data::<ConversionRate>(storage_manager).await?;
         }
     };
     Ok(())
 }
 
 #[cfg(not(tarpaulin_include))]
-fn load_and_list_data<T>(storage_manager: impl StorageManager<T>) -> Result<()>
+async fn load_and_list_data<T>(storage_manager: impl StorageManager<T>) -> Result<()>
 where
     T: ListDataItem + for<'de> Deserialize<'de> + Ord + Serialize,
 {
-    let mut data: Vec<T> = storage_manager.get_all()?;
+    let mut data: Vec<T> = storage_manager.get_all().await?;
 
     data.sort();
 

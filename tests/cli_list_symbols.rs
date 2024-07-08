@@ -11,8 +11,8 @@ use currency_conversion::{
 use currency_conversion_cli::config::Config;
 use predicates::prelude::predicate;
 
-#[test]
-fn cli_get_symbols() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::test]
+async fn cli_get_symbols() -> Result<(), Box<dyn std::error::Error>> {
     let data = vec![
         Symbols {
             code: "EUR".to_string(),
@@ -34,7 +34,7 @@ fn cli_get_symbols() -> Result<(), Box<dyn std::error::Error>> {
     let tsv_settings = TSVStorageSettings { file_path: path };
     let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone());
 
-    StorageManager::update(&storage_manager, &data).unwrap();
+    StorageManager::update(&storage_manager, &data).await.unwrap();
 
     let config_path = dirpath.to_string() + "/config.toml";
     let config = Config {

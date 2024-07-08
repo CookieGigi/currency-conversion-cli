@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{future::Future, time::Duration};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -37,13 +37,13 @@ where
     T: Serialize + for<'de> Deserialize<'de>,
 {
     /// Update all data in storage
-    fn update(&self, data: &[T]) -> Result<()>;
+    fn update(&self, data: &[T]) -> impl Future<Output =  Result<()>>;
 
     /// Get all data from storage
-    fn get_all(&self) -> Result<Vec<T>>;
+    fn get_all(&self) -> impl Future<Output =  Result<Vec<T>>>;
 
     /// Get informations about data (last update, number, ...)
-    fn get_data_info(&self) -> Result<DataInfo>;
+    fn get_data_info(&self) -> impl Future<Output =  Result<DataInfo>>;
 }
 
 /// Get conversion rates storage manager depending on storage type
