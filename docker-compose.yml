@@ -4,9 +4,13 @@ services:
   database:
     image: 'postgres:latest'
     ports:
-      - 15432:5432
+      - "${DB_PORT}:5432"
     env_file:
       - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     networks:
       - postgres-network
     volumes:
