@@ -14,19 +14,28 @@ use crate::{
 
 #[cfg(not(tarpaulin_include))]
 pub async fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
-    use currency_conversion::storage::common::{
-        get_conversion_rate_storage_manager, get_symbols_storage_manager,
+    use currency_conversion::storage::{
+        common::StorageType, psql::PSQLStorageManager, tsv::TSVStorageManager,
     };
 
     match args.dataset {
         ListDataSet::Symbols => {
-            let storage_manager = get_symbols_storage_manager(config.symbols_storage.clone());
-            load_and_list_data::<Symbols>(storage_manager).await?;
+            if let StorageType::TSV(settings) = &config.symbols_storage {
+                let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
+                load_and_list_data::<Symbols>(storage_manager).await?;
+            } else if let StorageType::PSQL(settings) = &config.symbols_storage {
+                let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+                load_and_list_data::<Symbols>(storage_manager).await?;
+            }
         }
         ListDataSet::ConversionRates => {
-            let storage_manager =
-                get_conversion_rate_storage_manager(config.conversion_rates_storage.clone());
-            load_and_list_data::<ConversionRate>(storage_manager).await?;
+            if let StorageType::TSV(settings) = &config.symbols_storage {
+                let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
+                load_and_list_data::<ConversionRate>(storage_manager).await?;
+            } else if let StorageType::PSQL(settings) = &config.symbols_storage {
+                let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+                load_and_list_data::<ConversionRate>(storage_manager).await?;
+            }
         }
     };
     Ok(())

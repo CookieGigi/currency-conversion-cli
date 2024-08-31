@@ -35,7 +35,7 @@ async fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
         file_path: conversion_rates_path,
     };
     let storage_manager_conversion_rates =
-        TSVStorageManager::from_settings(tsv_settings_conversion_rates.clone());
+        TSVStorageManager::from_settings(tsv_settings_conversion_rates.clone()).unwrap();
 
     StorageManager::update(&storage_manager_conversion_rates, &conversion_rates).await.unwrap();
 
@@ -45,7 +45,7 @@ async fn cli_info() -> Result<(), Box<dyn std::error::Error>> {
     let tsv_settings_symbols = TSVStorageSettings {
         file_path: symbols_path,
     };
-    let storage_manager_symbols = TSVStorageManager::from_settings(tsv_settings_symbols.clone());
+    let storage_manager_symbols = TSVStorageManager::from_settings(tsv_settings_symbols.clone()).unwrap();
 
     StorageManager::update(&storage_manager_symbols, &symbols).await.unwrap();
 

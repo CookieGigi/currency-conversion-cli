@@ -11,8 +11,13 @@ mod info_config;
 
 #[cfg(not(tarpaulin_include))]
 pub async fn run_info(config: Config, args: &InfoArgs, config_path: Option<String>) -> Result<()> {
-    use currency_conversion::storage::common::{
-        get_conversion_rate_storage_manager, get_symbols_storage_manager, StorageManager,
+    use currency_conversion::{
+        common::{conversion_rate::ConversionRate, supported_symbols::Symbols},
+        storage::{
+            common::{StorageManager, StorageType},
+            psql::PSQLStorageManager,
+            tsv::TSVStorageManager,
+        },
     };
 
     let mut infos: HashMap<&str, Info> = HashMap::new();
@@ -22,22 +27,41 @@ pub async fn run_info(config: Config, args: &InfoArgs, config_path: Option<Strin
 
     // Symbols
     if args.symbols || args.all {
-        let storage_manager = get_symbols_storage_manager(config.symbols_storage.clone());
-        infos.insert(
-            "symbols",
-            Info::Symbols(StorageManager::get_data_info(&storage_manager).await?),
-        );
+        if let StorageType::TSV(settings) = config.symbols_storage.clone() {
+            let storage_manager = TSVStorageManager::from_settings(settings)?;
+            infos.insert(
+                "symbols",
+                Info::Symbols(StorageManager::<Symbols>::get_data_info(&storage_manager).await?),
+            );
+        } else if let StorageType::PSQL(settings) = config.symbols_storage.clone() {
+            let storage_manager = PSQLStorageManager::from_settings(settings)?;
+            infos.insert(
+                "symbols",
+                Info::Symbols(StorageManager::<Symbols>::get_data_info(&storage_manager).await?),
+            );
+        }
     }
 
     // Conversion rate
 
     if args.conversion_rates || args.all {
-        let storage_manager =
-            get_conversion_rate_storage_manager(config.conversion_rates_storage.clone());
-        infos.insert(
-            "conversion_rates",
-            Info::ConversionRates(StorageManager::get_data_info(&storage_manager).await?),
-        );
+        if let StorageType::TSV(settings) = config.symbols_storage.clone() {
+            let storage_manager = TSVStorageManager::from_settings(settings)?;
+            infos.insert(
+                "conversion_rates",
+                Info::ConversionRates(
+                    StorageManager::<ConversionRate>::get_data_info(&storage_manager).await?,
+                ),
+            );
+        } else if let StorageType::PSQL(settings) = config.symbols_storage.clone() {
+            let storage_manager = PSQLStorageManager::from_settings(settings)?;
+            infos.insert(
+                "conversion_rates",
+                Info::ConversionRates(
+                    StorageManager::<ConversionRate>::get_data_info(&storage_manager).await?,
+                ),
+            );
+        }
     }
 
     // Config

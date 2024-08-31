@@ -32,7 +32,7 @@ async fn cli_get_symbols() -> Result<(), Box<dyn std::error::Error>> {
     path.push(dirpath.to_string() + "/symbols.tsv");
 
     let tsv_settings = TSVStorageSettings { file_path: path };
-    let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone());
+    let storage_manager = TSVStorageManager::from_settings(tsv_settings.clone()).unwrap();
 
     StorageManager::update(&storage_manager, &data).await.unwrap();
 

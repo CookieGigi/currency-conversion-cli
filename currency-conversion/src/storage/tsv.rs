@@ -28,8 +28,8 @@ impl TSVStorageManager {
     }
 
     /// Build a TSVStorageManager from settings
-    pub fn from_settings(settings: TSVStorageSettings) -> TSVStorageManager {
-        TSVStorageManager { settings }
+    pub fn from_settings(settings: TSVStorageSettings) -> Result<TSVStorageManager> {
+        Ok(TSVStorageManager { settings })
     }
 }
 
