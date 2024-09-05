@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::list::list_data::ListDataItem;
 
 /// Symbols of a currency
-#[derive(Serialize, Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord, sqlx::FromRow)]
 pub struct Symbols {
     pub code: String,
     pub name: String,

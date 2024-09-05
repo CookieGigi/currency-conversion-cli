@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use sqlx::{postgres::PgPoolOptions, query, Acquire, PgPool, Postgres, Transaction};
 
 use crate::common::{conversion_rate::ConversionRate, supported_symbols::Symbols};
 
@@ -34,15 +34,65 @@ impl PSQLStorageManager {
         let pool = PgPoolOptions::new().connect(&url).await?;
         Ok(PSQLStorageManager { settings, pool })
     }
+
+    async fn insert_one_symbol(&self, data: &Symbols, tx:&mut Transaction<'static, Postgres>) -> Result<()>{
+
+        query!(r#"Insert Into symbols
+                (id, "name", code)
+                Values
+                (
+                gen_random_uuid(),
+                $1,
+                $2
+                )"#,
+                data.name,
+                data.code).execute(&mut **tx).await?;
+        Ok(())
+    }
+
+    async fn insert_one_conversion_rate(&self, data: &ConversionRate, tx:&mut Transaction<'static, Postgres>) -> Result<()>{
+
+        query!(r#"Insert Into conversions_rates
+                (id, "from", "to", rate)
+                Values
+                (
+                gen_random_uuid(),
+                $1,
+                $2,
+				$3
+				)
+                "#,
+                data.from,
+                data.to,
+                data.rate
+                ).execute(&mut **tx).await?;
+        Ok(())
+    }
 }
+
 
 impl StorageManager<Symbols> for PSQLStorageManager {
     async fn update(&self, data: &[Symbols]) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        // Delete all from symbols
+        sqlx::query("Delete from symbols").execute(&mut *tx).await?;
+
+        for item in data {
+            self.insert_one_symbol(item, &mut tx).await?;
+        }
+
+        tx.commit().await?;
         Ok(())
     }
 
     async fn get_all(&self) -> Result<Vec<Symbols>> {
-        Ok(vec![])
+        let mut tx = self.pool.begin().await?;
+
+        let res: Vec<Symbols> = sqlx::query_as::<_, Symbols>(r#"Select code, "name" from symbols"#).fetch_all(&mut *tx).await?;
+
+
+        Ok(res)
     }
 
     async fn get_data_info(&self) -> Result<super::common::DataInfo> {
@@ -53,11 +103,26 @@ impl StorageManager<Symbols> for PSQLStorageManager {
 
 impl StorageManager<ConversionRate> for PSQLStorageManager {
     async fn update(&self, data: &[ConversionRate]) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        // Delete all from symbols
+        sqlx::query("Delete from conversions_rates").execute(&mut *tx).await?;
+
+        for item in data {
+            self.insert_one_conversion_rate(item, &mut tx).await?;
+        }
+
+        tx.commit().await?;
         Ok(())
     }
 
     async fn get_all(&self) -> Result<Vec<ConversionRate>> {
-        Ok(vec![])
+        let mut tx = self.pool.begin().await?;
+
+        let res: Vec<ConversionRate> = sqlx::query_as::<_, ConversionRate>(r#"Select "from", "to", rate from conversions_rates"#).fetch_all(&mut *tx).await?;
+
+
+        Ok(res)
     }
 
     async fn get_data_info(&self) -> Result<super::common::DataInfo> {

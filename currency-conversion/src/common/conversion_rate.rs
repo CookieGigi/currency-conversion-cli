@@ -8,7 +8,7 @@ use anyhow::{bail, Result};
 use crate::list::list_data::ListDataItem;
 
 /// Conversion Rates from a currency to another
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, PartialOrd, Eq, Ord)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone, PartialOrd, Eq, Ord,sqlx::FromRow)]
 pub struct ConversionRate {
     pub from: String,
     pub to: String,

@@ -28,6 +28,7 @@ tracing-subscriber = "0.3.18"
 home = "0.5.9"
 openssl = { version = "0.10.64", features = ["vendored"] }
 tokio = { version = "1", features = ["full"] }
+sqlx = { version = "0.8.2", features = [ "runtime-tokio", "rust_decimal"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.14"
