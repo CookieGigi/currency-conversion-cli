@@ -27,7 +27,7 @@ pub async fn run_convert(config: &Config, args: &ConvertArgs) -> Result<()> {
         )
         .await?;
     } else if let StorageType::PSQL(settings) = config.conversion_rates_storage.clone() {
-        let storage_manager = PSQLStorageManager::from_settings(settings)?;
+        let storage_manager = PSQLStorageManager::from_settings(settings).await?;
         res = convert(
             &storage_manager,
             &config.base,

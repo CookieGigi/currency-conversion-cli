@@ -24,7 +24,7 @@ pub async fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
                 let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
                 load_and_list_data::<Symbols>(storage_manager).await?;
             } else if let StorageType::PSQL(settings) = &config.symbols_storage {
-                let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+                let storage_manager = PSQLStorageManager::from_settings(settings.clone()).await?;
                 load_and_list_data::<Symbols>(storage_manager).await?;
             }
         }
@@ -33,7 +33,7 @@ pub async fn run_list(config: &Config, args: &ListArgs) -> Result<()> {
                 let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
                 load_and_list_data::<ConversionRate>(storage_manager).await?;
             } else if let StorageType::PSQL(settings) = &config.symbols_storage {
-                let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+                let storage_manager = PSQLStorageManager::from_settings(settings.clone()).await?;
                 load_and_list_data::<ConversionRate>(storage_manager).await?;
             }
         }

@@ -45,7 +45,7 @@ async fn run_update_symbols(
             let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
             update_symbols(&endpoint_url, &api_key, &storage_manager).await?;
         } else if let StorageType::PSQL(settings) = storage_settings {
-            let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+            let storage_manager = PSQLStorageManager::from_settings(settings.clone()).await?;
             update_symbols(&endpoint_url, &api_key, &storage_manager).await?;
         }
         tracing::info!("Update symbols end");
@@ -68,7 +68,7 @@ async fn run_update_conversion_rates(
             let storage_manager = TSVStorageManager::from_settings(settings.clone())?;
             update_conversion_rates(&endpoint_url, &api_key, &base, &storage_manager).await?;
         } else if let StorageType::PSQL(settings) = storage_settings {
-            let storage_manager = PSQLStorageManager::from_settings(settings.clone())?;
+            let storage_manager = PSQLStorageManager::from_settings(settings.clone()).await?;
             update_conversion_rates(&endpoint_url, &api_key, &base, &storage_manager).await?;
         }
 

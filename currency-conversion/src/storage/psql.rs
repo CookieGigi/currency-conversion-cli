@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 
 use crate::common::{conversion_rate::ConversionRate, supported_symbols::Symbols};
 
@@ -14,13 +15,24 @@ pub struct PSQLStorageSettings {
     pub database_name: String,
 }
 
+impl PSQLStorageSettings {
+
+    pub fn get_url(&self) -> Result<String>{
+        Ok(format!("postgres://{}:{}@{}:{}/{}", self.username, self.password, self.host, self.port, self.database_name))
+    }
+}
+
 pub struct PSQLStorageManager {
     settings: PSQLStorageSettings,
+    pool: PgPool, 
 }
 
 impl PSQLStorageManager {
-    pub fn from_settings(settings: PSQLStorageSettings) -> Result<PSQLStorageManager> {
-        Ok(PSQLStorageManager { settings })
+    pub async fn from_settings(settings: PSQLStorageSettings) -> Result<PSQLStorageManager> {
+
+        let url = settings.get_url()?;
+        let pool = PgPoolOptions::new().connect(&url).await?;
+        Ok(PSQLStorageManager { settings, pool })
     }
 }
 

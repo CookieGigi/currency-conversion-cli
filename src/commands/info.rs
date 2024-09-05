@@ -34,7 +34,7 @@ pub async fn run_info(config: Config, args: &InfoArgs, config_path: Option<Strin
                 Info::Symbols(StorageManager::<Symbols>::get_data_info(&storage_manager).await?),
             );
         } else if let StorageType::PSQL(settings) = config.symbols_storage.clone() {
-            let storage_manager = PSQLStorageManager::from_settings(settings)?;
+            let storage_manager = PSQLStorageManager::from_settings(settings).await?;
             infos.insert(
                 "symbols",
                 Info::Symbols(StorageManager::<Symbols>::get_data_info(&storage_manager).await?),
@@ -54,7 +54,7 @@ pub async fn run_info(config: Config, args: &InfoArgs, config_path: Option<Strin
                 ),
             );
         } else if let StorageType::PSQL(settings) = config.symbols_storage.clone() {
-            let storage_manager = PSQLStorageManager::from_settings(settings)?;
+            let storage_manager = PSQLStorageManager::from_settings(settings).await?;
             infos.insert(
                 "conversion_rates",
                 Info::ConversionRates(
