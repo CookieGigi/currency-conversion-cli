@@ -1,10 +1,15 @@
+use std::time::Duration;
+
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, query, query_as, PgPool, Postgres, Transaction};
+use sqlx::postgres::types::PgInterval;
+use sqlx::Row;
+
 
 use crate::common::{conversion_rate::ConversionRate, supported_symbols::Symbols};
 
-use super::common::StorageManager;
+use super::common::{DataInfoSuccess, StorageManager};
 
 #[derive(Debug, Deserialize, Serialize, Eq, PartialEq, Clone)]
 pub struct PSQLStorageSettings {
@@ -191,3 +196,23 @@ impl StorageManager<ConversionRate> for PSQLStorageManager {
         ))
     }
 }
+
+
+impl sqlx::FromRow<'_, sqlx::postgres::PgRow> for DataInfoSuccess {
+    fn from_row(row: &sqlx::postgres::PgRow) -> sqlx::Result<Self> {
+        let seconds_since_last_update: PgInterval = row.try_get("seconds_since_last_update")?;
+        let seconds_since_last_update = Duration::new(
+            (seconds_since_last_update.months * 2678400 + seconds_since_last_update.days * 86400)
+                as u64,
+            seconds_since_last_update.microseconds as u32,
+        );
+        let number_of_line: i64 = row.try_get("number_of_line")?;
+        // Impossible to have a bad value
+        let number_of_line: usize = number_of_line.try_into().unwrap();
+        Ok(Self {
+            seconds_since_last_update,
+            number_of_line,
+        })
+    }
+}
+ 
