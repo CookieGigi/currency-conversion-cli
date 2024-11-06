@@ -1,11 +1,11 @@
-use std::{future::Future, time::Duration, u64};
+use std::{future::Future, time::Duration};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-
 use super::{psql::PSQLStorageSettings, tsv::TSVStorageSettings};
-use sqlx::{postgres::{types::PgInterval, PgRow}, FromRow, Row};
+use sqlx::postgres::types::PgInterval;
+use sqlx::Row;
 
 /// Storage type available
 #[derive(Debug, Deserialize, Serialize, Eq, PartialEq, Clone)]

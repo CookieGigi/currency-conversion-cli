@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, query, query_as, Acquire, PgPool, Postgres, Transaction};
+use sqlx::{postgres::PgPoolOptions, query, query_as, PgPool, Postgres, Transaction};
 
 use crate::common::{conversion_rate::ConversionRate, supported_symbols::Symbols};
 

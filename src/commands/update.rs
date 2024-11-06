@@ -3,7 +3,6 @@ use crate::config::Config;
 use crate::cli::UpdateArgs;
 use anyhow::Result;
 use currency_conversion::{
-    common::supported_symbols::Symbols,
     storage::{common::StorageType, psql::PSQLStorageManager, tsv::TSVStorageManager},
     update::{update_converison_rates::update_conversion_rates, update_symbols::update_symbols},
 };
