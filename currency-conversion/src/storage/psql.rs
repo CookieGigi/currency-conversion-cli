@@ -25,7 +25,7 @@ impl PSQLStorageSettings {
 }
 
 pub struct PSQLStorageManager {
-    settings: PSQLStorageSettings,
+    //settings: PSQLStorageSettings,
     pool: PgPool,
 }
 
@@ -33,7 +33,7 @@ impl PSQLStorageManager {
     pub async fn from_settings(settings: PSQLStorageSettings) -> Result<PSQLStorageManager> {
         let url = settings.get_url()?;
         let pool = PgPoolOptions::new().connect(&url).await?;
-        Ok(PSQLStorageManager { settings, pool })
+        Ok(PSQLStorageManager { pool })
     }
 
     async fn insert_one_symbol(
