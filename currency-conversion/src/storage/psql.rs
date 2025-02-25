@@ -20,6 +20,7 @@ pub struct PSQLStorageSettings {
     pub database_name: String,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl PSQLStorageSettings {
     pub fn get_url(&self) -> Result<String> {
         Ok(format!(
@@ -35,6 +36,7 @@ pub struct PSQLStorageManager {
 }
 
 impl PSQLStorageManager {
+    #[cfg(not(tarpaulin_include))]
     pub async fn from_settings(settings: PSQLStorageSettings) -> Result<PSQLStorageManager> {
         let url = settings.get_url()?;
         let pool = PgPoolOptions::new().connect(&url).await?;
@@ -216,3 +218,80 @@ impl sqlx::FromRow<'_, sqlx::postgres::PgRow> for DataInfoSuccess {
     }
 }
  
+#[cfg(test)]
+mod test {
+
+
+    use rust_decimal::Decimal;
+    use sqlx::{ query, PgPool};
+
+    use crate::{common::{conversion_rate::ConversionRate, supported_symbols::Symbols}, storage::common::{DataInfo, StorageManager}};
+
+    #[sqlx::test]
+    async fn insert_one_symbol(pool: PgPool) -> sqlx::Result<()>{
+
+      // init storage manager
+      let sm = super::PSQLStorageManager{pool: pool.clone()};
+
+      // data test
+      let data = Symbols{ code : "EUR".to_string(), name: "Euro".to_string()};
+
+      // execution 
+      let mut tx = pool.begin().await.unwrap();
+      let res = sm.insert_one_symbol(&data, &mut tx).await;
+      assert!(res.is_ok()); 
+      tx.commit().await.unwrap();
+
+      // verify in database
+      let data_res = StorageManager::<Symbols>::get_all(&sm).await.unwrap();
+
+      assert_eq!(data_res.len(),  1);
+      assert_eq!(data_res[0], data);
+
+      Ok(())
+    }
+
+    #[sqlx::test]
+    async fn insert_one_conversion_rate(pool: PgPool) -> sqlx::Result<()>{
+
+      // init storage manager
+      let sm = super::PSQLStorageManager{pool: pool.clone()};
+
+      // data test
+      let data = ConversionRate{from: "EUR".to_string(), to: "USD".to_string(), rate: Decimal::new(81, 2)   };
+
+      // execution 
+      let mut tx = pool.begin().await.unwrap();
+      let res = sm.insert_one_conversion_rate(&data, &mut tx).await;
+      assert!(res.is_ok()); 
+      tx.commit().await.unwrap();
+
+      // verify in database
+      let data_res = StorageManager::<ConversionRate>::get_all(&sm).await.unwrap();
+
+      assert_eq!(data_res.len(),  1);
+      assert_eq!(data_res[0], data);
+
+      Ok(())
+    }
+
+    #[sqlx::test]
+    async fn update_data_info(pool: PgPool) -> sqlx::Result<()>{
+
+      // init storage manager
+      let sm = super::PSQLStorageManager{pool: pool.clone()};
+
+      // execution 
+      let mut tx = pool.begin().await.unwrap();
+      let res = sm.update_data_info("test", &mut tx).await;
+      assert!(res.is_ok()); 
+      tx.commit().await.unwrap();
+
+      Ok(())
+    }
+
+    #[sqlx::test]
+    async fn get_data_info_success(pool: PgPool) {
+      // data preparation
+    }
+}
